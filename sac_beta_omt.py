@@ -28,7 +28,7 @@ from tianshou.trainer import offpolicy_trainer
 from tianshou.utils import TensorboardLogger, WandbLogger
 from tianshou.utils.net.common import Net
 from tianshou.utils.net.continuous import SIGMA_MAX, SIGMA_MIN, ActorProb, Critic
-from torch.distributions import Beta, Independent
+from torch.distributions import AffineTransform, Beta, Independent, TransformedDistribution
 from torch.utils.tensorboard import SummaryWriter
 
 from env import make_mujoco_env
@@ -49,8 +49,8 @@ class BetaActorProb(ActorProb):
         concentration0 = self.sigma(logits)
         concentration1 = concentration1.clamp(min=SIGMA_MIN, max=SIGMA_MAX)
         concentration0 = concentration0.clamp(min=SIGMA_MIN, max=SIGMA_MAX)
-        concentration1 = torch.nn.functional.softplus(concentration1) + 1
-        concentration0 = torch.nn.functional.softplus(concentration0) + 1
+        concentration1 = concentration1.exp() + 1
+        concentration0 = concentration0.exp() + 1
         return (concentration1, concentration0), state
 
 
@@ -71,9 +71,12 @@ class SACBetaOMTPolicy(SACPolicy):
         dist = Independent(Beta(concentration1, concentration0), 1)
         if self._deterministic_eval and not self.training:
             act = dist.mean
+            log_prob = dist.log_prob(act).unsqueeze(-1)
+            act = 2 * act - 1
         else:
+            dist = TransformedDistribution(dist, AffineTransform(-1, 2))
             act = dist.rsample()
-        log_prob = dist.log_prob(act).unsqueeze(-1)
+            log_prob = dist.log_prob(act).unsqueeze(-1)
         return Batch(logits=logits, act=act, state=hidden, dist=dist, log_prob=log_prob)
 
 
@@ -99,7 +102,7 @@ def get_args():
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--training-num", type=int, default=1)
     parser.add_argument("--test-num", type=int, default=10)
-    parser.add_argument("--logdir", type=str, default="log")
+    parser.add_argument("--logdir", type=str, default="logs")
     parser.add_argument("--render", type=float, default=0.0)
     parser.add_argument(
         "--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu"
