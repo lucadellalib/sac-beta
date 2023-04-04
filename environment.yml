@@ -21,7 +21,6 @@ dependencies:
     - absl-py==1.4.0
     - astunparse==1.6.3
     - black==23.3.0
-    - box2d-py==2.3.5
     - cachetools==5.3.0
     - charset-normalizer==3.1.0
     - click==8.1.3

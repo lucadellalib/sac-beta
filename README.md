@@ -45,7 +45,7 @@ To train one of the available algorithms on a MuJoCo task open a terminal and ru
 
 ```bash
 conda activate sac-beta
-python run_experiment.py <algorithm> <task>
+python <algorithm>.py --task <task>
 ```
 
 Logs and experimental results (metrics, checkpoints, etc.) can be found in the auto-generated `logs`

@@ -16,9 +16,9 @@ if __name__ == "__main__":
     parser.add_argument("--log-dir", default="logs", help="log dir")
     parser.add_argument("algorithm", help="algorithm")
     parser.add_argument("task", help="MuJoCo task")
-    parser.add_argument("--epoch", default=1, help="number of epochs")
+    parser.add_argument("--epoch", default=200, help="number of epochs")
     args = parser.parse_args()
-    for seed in range(2):
+    for seed in range(10):
         current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         log_file = os.path.join(
             args.log_dir,
