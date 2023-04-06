@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Soft Actor-Critic with tanh normal policy.
+"""Soft Actor-Critic with normal policy.
 
 References
 ----------
@@ -18,19 +18,49 @@ import argparse
 import datetime
 import os
 import pprint
+from typing import Any, Optional, Union
 
 import numpy as np
 import torch
-from tianshou.data import Collector, ReplayBuffer, VectorReplayBuffer
-from tianshou.policy import SACPolicy as SACTanhNormalPolicy
+from tianshou.data import Batch, Collector, ReplayBuffer, VectorReplayBuffer
+from tianshou.policy import SACPolicy
 from tianshou.trainer import offpolicy_trainer
 from tianshou.utils import TensorboardLogger, WandbLogger
 from tianshou.utils.net.common import Net
 from tianshou.utils.net.continuous import ActorProb, Critic
+from torch.distributions import Independent, Normal
 from torch.nn import LayerNorm
 from torch.utils.tensorboard import SummaryWriter
 
 from env import make_mujoco_env
+
+
+class SACNormalPolicy(SACPolicy):
+    """Soft Actor-Critic normal policy."""
+
+    def forward(
+        self,
+        batch: Batch,
+        state: Optional[Union[dict, Batch, np.ndarray]] = None,
+        input: str = "obs",
+        **kwargs: Any,
+    ) -> Batch:
+        obs = batch[input]
+        logits, hidden = self.actor(obs, state=state, info=batch.info)
+        assert isinstance(logits, tuple)
+        dist = Independent(Normal(*logits), 1)
+        if self._deterministic_eval and not self.training:
+            act = logits[0]
+        else:
+            act = dist.rsample()
+        log_prob = dist.log_prob(act).unsqueeze(-1)
+        return Batch(
+            logits=logits,
+            act=act,
+            state=hidden,
+            dist=dist,
+            log_prob=log_prob
+        )
 
 
 def get_args():
@@ -134,7 +164,7 @@ def main(args=get_args()):
         alpha_optim = torch.optim.Adam([log_alpha], lr=args.alpha_lr)
         args.alpha = (target_entropy, log_alpha, alpha_optim)
 
-    policy = SACTanhNormalPolicy(
+    policy = SACNormalPolicy(
         actor,
         actor_optim,
         critic1,

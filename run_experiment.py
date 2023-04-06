@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Run experiment."""
+"""Run experiment for different seeds."""
 
 import argparse
 import datetime
@@ -16,9 +16,10 @@ if __name__ == "__main__":
     parser.add_argument("--log-dir", default="logs", help="log dir")
     parser.add_argument("algorithm", help="algorithm")
     parser.add_argument("task", help="MuJoCo task")
-    parser.add_argument("--epoch", default=200, help="number of epochs")
+    parser.add_argument("--epoch", default=100, help="number of epochs")
+    parser.add_argument("--seeds", nargs="+", default=[0, 1, 2, 3, 4], help="seeds")
     args = parser.parse_args()
-    for seed in range(10):
+    for seed in args.seeds:
         current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         log_file = os.path.join(
             args.log_dir,

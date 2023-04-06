@@ -18,9 +18,9 @@ __all__ = ["make_mujoco_env"]
 
 
 def make_mujoco_env(task, seed, training_num, test_num, obs_norm):
-    """Wrapper function for Mujoco env.
+    """Wrapper function for MuJoCo env.
 
-    If EnvPool is installed, it will automatically switch to EnvPool"s Mujoco env.
+    If EnvPool is installed, it will automatically switch to EnvPool's Mujoco env.
 
     :return: a tuple of (single env, training envs, test envs).
     """
@@ -32,14 +32,14 @@ def make_mujoco_env(task, seed, training_num, test_num, obs_norm):
     else:
         warnings.warn(
             "Recommend using envpool (pip install envpool) "
-            "to run Mujoco environments more efficiently."
+            "to run MuJoCo environments more efficiently."
         )
         env = gym.make(task)
         train_envs = ShmemVectorEnv(
             [lambda: gym.make(task) for _ in range(training_num)]
         )
         test_envs = ShmemVectorEnv([lambda: gym.make(task) for _ in range(test_num)])
-        #env.seed(seed)
+        # env.seed(seed)
         train_envs.seed(seed)
         test_envs.seed(seed)
     if obs_norm:

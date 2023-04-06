@@ -227,7 +227,7 @@ def plot_ax(
 
     ax.legend(
         legends,
-        loc=2 if legend_outside else None,
+        loc=2 if legend_outside else "upper left",
         bbox_to_anchor=(1, 1) if legend_outside else None,
     )
     if xlim is not None:
@@ -255,8 +255,8 @@ def plot_figure(
     **kwargs,
 ):
     rc("text", usetex=usetex)
-    rc("font", family="serif", serif=["Computer Modern"], size=14)
-    rc("axes", labelsize=15)
+    rc("font", family="serif", serif=["Computer Modern"], size=12)
+    rc("axes", labelsize=12)
     rc("legend", fontsize=12)
     rc("xtick", direction="out")
     rc("ytick", direction="out")
@@ -321,9 +321,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--smooth", type=int, default=0, help="smooth radius of y axis (default: 0)"
     )
-    parser.add_argument(
-        "--xlabel", default="Timesteps", help="matplotlib figure xlabel"
-    )
+    parser.add_argument("--xlabel", default="Timestep", help="matplotlib figure xlabel")
     parser.add_argument("--ylabel", default="Return", help="matplotlib figure ylabel")
     parser.add_argument(
         "--shaded-std",
@@ -384,8 +382,15 @@ if __name__ == "__main__":
         help="render text with LaTeX",
     )
     args = parser.parse_args()
-    csv_files = convert_tfevents_to_csv(args.root_dir, args.refresh)
-    merge_csv(csv_files, args.root_dir, args.remove_zero)
+    for dirpath, dirnames, filenames in os.walk(args.root_dir):
+        for d1 in dirnames:
+            d1_path = os.path.join(dirpath, d1)
+            for d2 in os.listdir(d1_path):
+                d2_path = os.path.join(d1_path, d2)
+                if os.path.isdir(d2_path):
+                    if "policy.pth" in os.listdir(d2_path):
+                        csv_files = convert_tfevents_to_csv(dirpath, args.refresh)
+                        merge_csv(csv_files, dirpath, args.remove_zero)
     file_lists = find_all_files(args.root_dir, re.compile(args.file_pattern))
     file_lists = [os.path.relpath(f, args.root_dir) for f in file_lists]
     if args.style:

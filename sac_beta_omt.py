@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 
-"""Soft Actor-Critic with beta policy via optimal mass transport gradients.
+"""Soft Actor-Critic with beta policy via optimal mass transport implicit reparameterization.
 
 References
 ----------
-.. [1] M. Jankowiak and M. Obermeyer.
+.. [1] T. Haarnoja, A. Zhou, P. Abbeel, and S. Levine.
+       "Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor".
+       In: ICML. 2018, pp. 1861-1870.
+       URL: https://arxiv.org/abs/1801.01290v2
+.. [2] M. Jankowiak and M. Obermeyer.
        "Pathwise Derivatives Beyond the Reparameterization Trick".
        In: ICML. 2018, pp. 2240-2249.
-       URL: https://arxiv.org/abs/1806.01851
+       URL: https://arxiv.org/abs/1806.01851v2
 
 """
 
@@ -28,7 +32,13 @@ from tianshou.trainer import offpolicy_trainer
 from tianshou.utils import TensorboardLogger, WandbLogger
 from tianshou.utils.net.common import Net
 from tianshou.utils.net.continuous import SIGMA_MAX, SIGMA_MIN, ActorProb, Critic
-from torch.distributions import AffineTransform, Beta, Independent, TransformedDistribution
+from torch.distributions import (
+    AffineTransform,
+    Beta,
+    Independent,
+    TransformedDistribution,
+)
+from torch.nn import LayerNorm
 from torch.utils.tensorboard import SummaryWriter
 
 from env import make_mujoco_env
@@ -55,9 +65,9 @@ class BetaActorProb(ActorProb):
 
 
 class SACBetaOMTPolicy(SACPolicy):
-    """Soft Actor-Critic beta policy via optimal mass transport gradients."""
+    """Soft Actor-Critic beta policy via optimal mass transport implicit reparameterization."""
 
-    def forward(  # type: ignore
+    def forward(
         self,
         batch: Batch,
         state: Optional[Union[dict, Batch, np.ndarray]] = None,
@@ -94,7 +104,7 @@ def get_args():
     parser.add_argument("--auto-alpha", default=False, action="store_true")
     parser.add_argument("--alpha-lr", type=float, default=3e-4)
     parser.add_argument("--start-timesteps", type=int, default=10000)
-    parser.add_argument("--epoch", type=int, default=200)
+    parser.add_argument("--epoch", type=int, default=100)
     parser.add_argument("--step-per-epoch", type=int, default=5000)
     parser.add_argument("--step-per-collect", type=int, default=1)
     parser.add_argument("--update-per-step", type=int, default=1)
@@ -139,7 +149,12 @@ def main(args=get_args()):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     # model
-    net_a = Net(args.state_shape, hidden_sizes=args.hidden_sizes, device=args.device)
+    net_a = Net(
+        args.state_shape,
+        hidden_sizes=args.hidden_sizes,
+        norm_layer=LayerNorm,
+        device=args.device,
+    )
     actor = BetaActorProb(
         net_a,
         args.action_shape,
@@ -153,6 +168,7 @@ def main(args=get_args()):
         args.state_shape,
         args.action_shape,
         hidden_sizes=args.hidden_sizes,
+        norm_layer=LayerNorm,
         concat=True,
         device=args.device,
     )
@@ -160,6 +176,7 @@ def main(args=get_args()):
         args.state_shape,
         args.action_shape,
         hidden_sizes=args.hidden_sizes,
+        norm_layer=LayerNorm,
         concat=True,
         device=args.device,
     )
