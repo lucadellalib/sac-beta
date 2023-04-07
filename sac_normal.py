@@ -54,13 +54,7 @@ class SACNormalPolicy(SACPolicy):
         else:
             act = dist.rsample()
         log_prob = dist.log_prob(act).unsqueeze(-1)
-        return Batch(
-            logits=logits,
-            act=act,
-            state=hidden,
-            dist=dist,
-            log_prob=log_prob
-        )
+        return Batch(logits=logits, act=act, state=hidden, dist=dist, log_prob=log_prob)
 
 
 def get_args():
@@ -69,8 +63,8 @@ def get_args():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--buffer-size", type=int, default=1000000)
     parser.add_argument("--hidden-sizes", type=int, nargs="*", default=[256, 256])
-    parser.add_argument("--actor-lr", type=float, default=1e-3)
-    parser.add_argument("--critic-lr", type=float, default=1e-3)
+    parser.add_argument("--actor-lr", type=float, default=5e-4)
+    parser.add_argument("--critic-lr", type=float, default=5e-4)
     parser.add_argument("--gamma", type=float, default=0.99)
     parser.add_argument("--tau", type=float, default=0.005)
     parser.add_argument("--alpha", type=float, default=0.2)
@@ -194,7 +188,7 @@ def main(args=get_args()):
 
     # log
     now = datetime.datetime.now().strftime("%y%m%d-%H%M%S")
-    args.algo_name = "SAC-TahnNormal"
+    args.algo_name = "SAC-Normal"
     log_name = os.path.join(args.task, args.algo_name, str(args.seed), now)
     log_path = os.path.join(args.logdir, log_name)
 

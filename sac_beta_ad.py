@@ -51,7 +51,7 @@ class BetaAD(Beta):
         """Wrapper around `sample` method of TensorFlow beta distribution."""
 
         @staticmethod
-        def forward(concentration1, concentration0):
+        def forward(ctx, concentration1, concentration0):
             import tensorflow as tf
             import tensorflow_probability as tfp
 
@@ -78,29 +78,20 @@ class BetaAD(Beta):
                 device=device,
                 requires_grad=requires_grad,
             )
-            return sample, concentration1_grad, concentration0_grad
+            ctx.concentration1_grad = concentration1_grad
+            ctx.concentration0_grad = concentration0_grad
+            return sample
 
         @staticmethod
-        def setup_context(ctx, inputs, output):
-            _, concentration1_grad, concentration0_grad = output
-            ctx.save_for_backward(concentration1_grad, concentration0_grad)
-
-        @staticmethod
-        def backward(ctx, grad_output, concentration1_grad2, concentration0_grad2):
-            concentration1_grad, concentration0_grad = ctx.saved_tensors
-            concentration1_grad_output = grad_output * concentration1_grad
-            concentration0_grad_output = grad_output * concentration0_grad
+        def backward(ctx, grad_output):
+            concentration1_grad_output = grad_output * ctx.concentration1_grad
+            concentration0_grad_output = grad_output * ctx.concentration0_grad
             return concentration1_grad_output, concentration0_grad_output
-
-    @staticmethod
-    def tf_beta_sample(concentration1, concentration0):
-        result, _, _ = BetaAD.TFBetaSample.apply(concentration1, concentration0)
-        return result
 
     def rsample(self, sample_shape=()):
         concentration1 = self.concentration1
         concentration0 = self.concentration0
-        return self.tf_beta_sample(concentration1, concentration0)
+        return self.TFBetaSample.apply(concentration1, concentration0)
 
 
 class BetaActorProb(ActorProb):
@@ -155,8 +146,8 @@ def get_args():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--buffer-size", type=int, default=1000000)
     parser.add_argument("--hidden-sizes", type=int, nargs="*", default=[256, 256])
-    parser.add_argument("--actor-lr", type=float, default=1e-3)
-    parser.add_argument("--critic-lr", type=float, default=1e-3)
+    parser.add_argument("--actor-lr", type=float, default=5e-4)
+    parser.add_argument("--critic-lr", type=float, default=5e-4)
     parser.add_argument("--gamma", type=float, default=0.99)
     parser.add_argument("--tau", type=float, default=0.005)
     parser.add_argument("--alpha", type=float, default=0.2)

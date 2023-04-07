@@ -34,7 +34,7 @@ from tianshou.utils.net.common import Net
 from tianshou.utils.net.continuous import SIGMA_MAX, SIGMA_MIN, ActorProb, Critic
 from torch.distributions import (
     AffineTransform,
-    Beta,
+    Beta as BetaOMT,
     Independent,
     TransformedDistribution,
 )
@@ -78,7 +78,7 @@ class SACBetaOMTPolicy(SACPolicy):
         logits, hidden = self.actor(obs, state=state, info=batch.info)
         assert isinstance(logits, tuple)
         concentration1, concentration0 = logits
-        dist = Independent(Beta(concentration1, concentration0), 1)
+        dist = Independent(BetaOMT(concentration1, concentration0), 1)
         if self._deterministic_eval and not self.training:
             act = dist.mean
             log_prob = dist.log_prob(act).unsqueeze(-1)
@@ -96,8 +96,8 @@ def get_args():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--buffer-size", type=int, default=1000000)
     parser.add_argument("--hidden-sizes", type=int, nargs="*", default=[256, 256])
-    parser.add_argument("--actor-lr", type=float, default=1e-3)
-    parser.add_argument("--critic-lr", type=float, default=1e-3)
+    parser.add_argument("--actor-lr", type=float, default=5e-4)
+    parser.add_argument("--critic-lr", type=float, default=5e-4)
     parser.add_argument("--gamma", type=float, default=0.99)
     parser.add_argument("--tau", type=float, default=0.005)
     parser.add_argument("--alpha", type=float, default=0.2)

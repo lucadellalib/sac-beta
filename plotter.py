@@ -15,8 +15,7 @@ from collections import defaultdict
 import matplotlib
 import numpy as np
 import tqdm
-from matplotlib import pyplot as plt
-from matplotlib import rc
+from matplotlib import pyplot as plt, rc
 from tensorboard.backend.event_processing import event_accumulator
 
 
@@ -220,15 +219,17 @@ def plot_ax(
         x, y = csv_dict[xkey], csv_dict[ykey]
         y = smooth(y, radius=smooth_radius)
         color = COLORS[index % len(COLORS)]
-        ax.plot(x, y, color=color)
+        ax.plot(x, y, label=legends[index], color=color)
         if shaded_std and ykey + ":shaded" in csv_dict:
             y_shaded = smooth(csv_dict[ykey + ":shaded"], radius=smooth_radius)
-            ax.fill_between(x, y - y_shaded, y + y_shaded, color=color, alpha=0.2)
+            ax.fill_between(
+                x, y - 2 * y_shaded, y + 2 * y_shaded, color=color, alpha=0.2
+            )
 
     ax.legend(
-        legends,
         loc=2 if legend_outside else "upper left",
         bbox_to_anchor=(1, 1) if legend_outside else None,
+        fancybox=True,
     )
     if xlim is not None:
         ax.set_xlim(xmin=0, xmax=xlim)
@@ -239,6 +240,12 @@ def plot_ax(
         ax.set_xlabel(xlabel)
     if ylabel is not None:
         ax.set_ylabel(ylabel)
+    # Use SI notation
+    xlabels = ["0"]
+    for x in ax.get_xticks()[1:]:
+        xlabel = f"{int(x / 1000)}k"
+        xlabels.append(xlabel)
+    ax.set_xticklabels(xlabels)
     # add grid
     plt.grid()
 
@@ -257,9 +264,9 @@ def plot_figure(
     rc("text", usetex=usetex)
     rc("font", family="serif", serif=["Computer Modern"], size=12)
     rc("axes", labelsize=12)
-    rc("legend", fontsize=12)
-    rc("xtick", direction="out")
-    rc("ytick", direction="out")
+    rc("legend", fontsize=10, handletextpad=0.3, handlelength=2)
+    rc("xtick", direction="in")
+    rc("ytick", direction="in")
 
     if not group_pattern:
         fig, ax = plt.subplots(figsize=(fig_length, fig_width))
@@ -279,8 +286,6 @@ def plot_figure(
         axes = axes.flatten()
         for i, (k, v) in enumerate(res.items()):
             plot_ax(axes[i], v, title=k, **kwargs)
-    if title:  # add title
-        fig.suptitle(title, fontsize=20)
     fig.tight_layout()
 
 
@@ -356,10 +361,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--group-pattern",
         type=str,
-        default=r"(/|^)\w*?\-v(\d|$)",
-        help="regular expression to group files in sub-figure, default to grouping "
-        "according to env_name dir, "
-        " means no grouping",
+        default="",
+        help="regular expression to group files in sub-figure, default to no grouping",
     )
     parser.add_argument(
         "--legend-pattern",
