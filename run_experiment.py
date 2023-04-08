@@ -35,7 +35,7 @@ if __name__ == "__main__":
             f"--task {args.task} "
             f"--epoch {args.epoch} "
             f"--seed {seed} "
-            f"--logdir {args.experiment_dir} "
+            f"--experiment-dir {args.experiment_dir} "
             f"> {log_file} 2>&1 &",
             shell=True,
             stdin=None,
