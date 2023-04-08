@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("task", help="MuJoCo task")
     parser.add_argument("--epoch", default=200, help="number of epochs")
     parser.add_argument(
-        "--seeds", nargs="+", default=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], help="seeds"
+        "--seeds", nargs="+", default=[0, 1, 2, 3, 4], help="seeds"
     )
     args = parser.parse_args()
     for seed in args.seeds:
