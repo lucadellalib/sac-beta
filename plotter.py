@@ -240,12 +240,8 @@ def plot_ax(
         ax.set_xlabel(xlabel)
     if ylabel is not None:
         ax.set_ylabel(ylabel)
-    # Use SI notation
-    xlabels = ["0"]
-    for x in ax.get_xticks()[1:]:
-        xlabel = f"{int(x / 1000)}k"
-        xlabels.append(xlabel)
-    ax.set_xticklabels(xlabels)
+    # Use scientific notation
+    ax.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
     # add grid
     plt.grid()
 

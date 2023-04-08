@@ -57,8 +57,8 @@ and `experiments` directory, respectively.
 
 ### Reproducing the experimental results
 
-The experiments were run on a CentOS Linux 7 machine with an Intel Gold 6148 Skylake CPU with 10 cores
-@ 2.40 GHz, 47 GB RAM and an NVIDIA Tesla V100 SXM2 @ 32GB with CUDA Toolkit 11.3.1.
+The experiments were run on a CentOS Linux 7 machine with an Intel Xeon Gold 6148 Skylake CPU with 20 cores
+@ 2.40 GHz, 32 GB RAM and an NVIDIA Tesla V100 SXM2 @ 16GB with CUDA Toolkit 11.4.2.
 To reproduce the experimental results, open a terminal and run:
 
 ```bash
