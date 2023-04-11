@@ -38,13 +38,9 @@ from torch.distributions import (
     Independent,
     TransformedDistribution,
 )
-from torch.nn import LayerNorm
 from torch.utils.tensorboard import SummaryWriter
 
 from env import make_mujoco_env
-
-
-EPSILON = 1e-8
 
 
 class BetaAD(Beta):
@@ -91,11 +87,16 @@ class BetaAD(Beta):
             concentration0_grad_output = grad_output * ctx.concentration0_grad
             return concentration1_grad_output, concentration0_grad_output
 
+    @property
+    def mean(self):
+        return super().mean.clamp(1e-45, 1 - 1e-7)
+
     def rsample(self, sample_shape=()):
         concentration1 = self.concentration1
         concentration0 = self.concentration0
+        # Clamp to avoid log probability going to NaN or infinity
         return self.TFBetaSample.apply(concentration1, concentration0).clamp(
-            EPSILON, 1 - EPSILON
+            1e-45, 1 - 1e-7
         )
 
 
@@ -135,8 +136,8 @@ class SACBetaADPolicy(SACPolicy):
         concentration1, concentration0 = logits
         dist = Independent(BetaAD(concentration1, concentration0), 1)
         if self._deterministic_eval and not self.training:
-            act = dist.mean.clamp(EPSILON, 1 - EPSILON)
-            log_prob = 0
+            act = dist.mean
+            log_prob = 0.0
             act = 2 * act - 1
         else:
             dist = TransformedDistribution(dist, AffineTransform(-1, 2, cache_size=1))
@@ -207,7 +208,6 @@ def main(args=get_args()):
     net_a = Net(
         args.state_shape,
         hidden_sizes=args.hidden_sizes,
-        norm_layer=LayerNorm,
         device=args.device,
     )
     actor = BetaActorProb(
@@ -223,7 +223,6 @@ def main(args=get_args()):
         args.state_shape,
         args.action_shape,
         hidden_sizes=args.hidden_sizes,
-        norm_layer=LayerNorm,
         concat=True,
         device=args.device,
     )
@@ -231,7 +230,6 @@ def main(args=get_args()):
         args.state_shape,
         args.action_shape,
         hidden_sizes=args.hidden_sizes,
-        norm_layer=LayerNorm,
         concat=True,
         device=args.device,
     )

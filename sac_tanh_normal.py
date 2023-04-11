@@ -27,7 +27,6 @@ from tianshou.trainer import offpolicy_trainer
 from tianshou.utils import TensorboardLogger, WandbLogger
 from tianshou.utils.net.common import Net
 from tianshou.utils.net.continuous import ActorProb, Critic
-from torch.nn import LayerNorm
 from torch.utils.tensorboard import SummaryWriter
 
 from env import make_mujoco_env
@@ -95,7 +94,6 @@ def main(args=get_args()):
     net_a = Net(
         args.state_shape,
         hidden_sizes=args.hidden_sizes,
-        norm_layer=LayerNorm,
         device=args.device,
     )
     actor = ActorProb(
@@ -111,7 +109,6 @@ def main(args=get_args()):
         args.state_shape,
         args.action_shape,
         hidden_sizes=args.hidden_sizes,
-        norm_layer=LayerNorm,
         concat=True,
         device=args.device,
     )
@@ -119,7 +116,6 @@ def main(args=get_args()):
         args.state_shape,
         args.action_shape,
         hidden_sizes=args.hidden_sizes,
-        norm_layer=LayerNorm,
         concat=True,
         device=args.device,
     )

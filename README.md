@@ -74,15 +74,15 @@ python run_experiment.py sac_tanh_normal HalfCheetah-v4
 python run_experiment.py sac_beta_ad HalfCheetah-v4
 python run_experiment.py sac_beta_omt HalfCheetah-v4
 
+python run_experiment.py sac_normal Hopper-v4
+python run_experiment.py sac_tanh_normal Hopper-v4
+python run_experiment.py sac_beta_ad Hopper-v4
+python run_experiment.py sac_beta_omt Hopper-v4
+
 python run_experiment.py sac_normal Walker2d-v4
 python run_experiment.py sac_tanh_normal Walker2d-v4
 python run_experiment.py sac_beta_ad Walker2d-v4
 python run_experiment.py sac_beta_omt Walker2d-v4
-
-python run_experiment.py sac_normal Swimmer-v4
-python run_experiment.py sac_tanh_normal Swimmer-v4
-python run_experiment.py sac_beta_ad Swimmer-v4
-python run_experiment.py sac_beta_omt Swimmer-v4
 ```
 
 Wait for the experiments to finish. To plot the results, open a terminal and run:
@@ -90,8 +90,8 @@ Wait for the experiments to finish. To plot the results, open a terminal and run
 ```bash
 python plotter.py --root-dir experiments/Ant-v4 --shaded-std --legend-pattern "^([\w-]+)" --title Ant-v4 -u --output-path Ant-v4.pdf
 python plotter.py --root-dir experiments/HalfCheetah-v4 --shaded-std --legend-pattern "^([\w-]+)" --title HalfCheetah-v4 -u --output-path HalfCheetah-v4.pdf
+python plotter.py --root-dir experiments/Hopper-v4 --shaded-std --legend-pattern "^([\w-]+)" --title Hopper-v4 -u --output-path Hopper-v4.pdf
 python plotter.py --root-dir experiments/Walker2d-v4 --shaded-std --legend-pattern "^([\w-]+)" --title Walker2d-v4 -u --output-path Walker2d-v4.pdf
-python plotter.py --root-dir experiments/Swimmer-v4 --shaded-std --legend-pattern "^([\w-]+)" --title Swimmer-v4 -u --output-path Swimmer-v4.pdf
 ```
 
 ---------------------------------------------------------------------------------------------------------

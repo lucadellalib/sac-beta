@@ -38,20 +38,21 @@ from torch.distributions import (
     Independent,
     TransformedDistribution,
 )
-from torch.nn import LayerNorm
 from torch.utils.tensorboard import SummaryWriter
 
 from env import make_mujoco_env
 
 
-EPSILON = 1e-8
-
-
 class BetaOMT(Beta):
     """Beta distribution whose samples are drawn via optimal mass transport implicit reparameterization."""
 
+    @property
+    def mean(self):
+        return super().mean.clamp(1e-45, 1 - 1e-7)
+
     def rsample(self, sample_shape=()):
-        return super().rsample(sample_shape).clamp(EPSILON, 1 - EPSILON)
+        # Clamp to avoid log probability going to NaN or infinity
+        return super().rsample(sample_shape).clamp(1e-45, 1 - 1e-7)
 
 
 class BetaActorProb(ActorProb):
@@ -90,8 +91,8 @@ class SACBetaOMTPolicy(SACPolicy):
         concentration1, concentration0 = logits
         dist = Independent(BetaOMT(concentration1, concentration0), 1)
         if self._deterministic_eval and not self.training:
-            act = dist.mean.clamp(EPSILON, 1 - EPSILON)
-            log_prob = 0
+            act = dist.mean
+            log_prob = 0.0
             act = 2 * act - 1
         else:
             dist = TransformedDistribution(dist, AffineTransform(-1, 2, cache_size=1))
@@ -162,7 +163,6 @@ def main(args=get_args()):
     net_a = Net(
         args.state_shape,
         hidden_sizes=args.hidden_sizes,
-        norm_layer=LayerNorm,
         device=args.device,
     )
     actor = BetaActorProb(
@@ -178,7 +178,6 @@ def main(args=get_args()):
         args.state_shape,
         args.action_shape,
         hidden_sizes=args.hidden_sizes,
-        norm_layer=LayerNorm,
         concat=True,
         device=args.device,
     )
@@ -186,7 +185,6 @@ def main(args=get_args()):
         args.state_shape,
         args.action_shape,
         hidden_sizes=args.hidden_sizes,
-        norm_layer=LayerNorm,
         concat=True,
         device=args.device,
     )

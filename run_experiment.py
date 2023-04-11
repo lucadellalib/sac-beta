@@ -17,9 +17,7 @@ if __name__ == "__main__":
     parser.add_argument("algorithm", help="algorithm")
     parser.add_argument("task", help="MuJoCo task")
     parser.add_argument("--epoch", default=200, help="number of epochs")
-    parser.add_argument(
-        "--seeds", nargs="+", default=[0, 1, 2, 3, 4], help="seeds"
-    )
+    parser.add_argument("--seeds", nargs="+", default=[0, 1, 2, 3, 4], help="seeds")
     args = parser.parse_args()
     for seed in args.seeds:
         current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
