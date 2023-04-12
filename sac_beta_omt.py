@@ -32,27 +32,21 @@ from tianshou.trainer import offpolicy_trainer
 from tianshou.utils import TensorboardLogger, WandbLogger
 from tianshou.utils.net.common import Net
 from tianshou.utils.net.continuous import SIGMA_MAX, SIGMA_MIN, ActorProb, Critic
-from torch.distributions import (
-    AffineTransform,
-    Beta,
-    Independent,
-    TransformedDistribution,
-)
+from torch.distributions import Beta, Independent
 from torch.utils.tensorboard import SummaryWriter
 
 from env import make_mujoco_env
 
 
+EPSILON = 1e-45
+
+
 class BetaOMT(Beta):
     """Beta distribution whose samples are drawn via optimal mass transport implicit reparameterization."""
 
-    @property
-    def mean(self):
-        return super().mean.clamp(1e-45, 1 - 1e-7)
-
     def rsample(self, sample_shape=()):
         # Clamp to avoid log probability going to NaN or infinity
-        return super().rsample(sample_shape).clamp(1e-45, 1 - 1e-7)
+        return super().rsample(sample_shape).clamp(EPSILON, 1 - EPSILON)
 
 
 class BetaActorProb(ActorProb):
@@ -93,11 +87,10 @@ class SACBetaOMTPolicy(SACPolicy):
         if self._deterministic_eval and not self.training:
             act = dist.mean
             log_prob = 0.0
-            act = 2 * act - 1
         else:
-            dist = TransformedDistribution(dist, AffineTransform(-1, 2, cache_size=1))
             act = dist.rsample()
             log_prob = dist.log_prob(act).unsqueeze(-1)
+        act = 2 * act - 1
         return Batch(logits=logits, act=act, state=hidden, dist=dist, log_prob=log_prob)
 
 
