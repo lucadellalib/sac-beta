@@ -38,7 +38,7 @@ from torch.utils.tensorboard import SummaryWriter
 from env import make_mujoco_env
 
 
-EPSILON = 1e-45
+EPSILON = 1e-7
 
 
 class BetaAD(Beta):
