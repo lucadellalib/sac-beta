@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Soft actor-critic with beta policy via optimal mass transport implicit reparameterization (allow for multimodal beta distribution).
+"""Soft actor-critic with beta policy via optimal mass transport implicit reparameterization (allow for non-concave beta distribution).
 
 References
 ----------
@@ -222,7 +222,7 @@ def main(args=get_args()):
 
     # log
     now = datetime.datetime.now().strftime("%y%m%d-%H%M%S")
-    args.algo_name = "SAC-Beta-OMT-multimodal"
+    args.algo_name = "SAC-Beta-OMT-non_concave"
     log_name = os.path.join(args.task, args.algo_name, str(args.seed), now)
     log_path = os.path.join(args.experiment_dir, log_name)
 

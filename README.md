@@ -106,7 +106,7 @@ conda activate sac-beta
 
 python run_experiment.py sac_beta_omt Ant-v4 --experiment-dir experiments/ablation
 python run_experiment.py sac_beta_omt_no_clip Ant-v4 --experiment-dir experiments/ablation
-python run_experiment.py sac_beta_omt_multimodal Ant-v4 --experiment-dir experiments/ablation
+python run_experiment.py sac_beta_omt_non-concave Ant-v4 --experiment-dir experiments/ablation
 python run_experiment.py sac_beta_omt_softplus Ant-v4 --experiment-dir experiments/ablation
 ```
 
