@@ -1,8 +1,8 @@
-# Soft Actor-Critic with Beta Policy
+# Soft Actor-Critic with Beta Policy via Implicit Reparameterization Gradients
 
-This project investigates the use of [Soft Actor-Critic (SAC)](https://arxiv.org/abs/1801.01290v2) with beta
+This project investigates the use of [soft actor-critic (SAC)](https://arxiv.org/abs/1801.01290v2) with a beta
 policy, which, compared to a normal policy, does not suffer from boundary effect bias and [has been shown to
-convergence faster](https://proceedings.mlr.press/v70/chou17a.html). Implicit reparameterizations based
+convergence faster](https://proceedings.mlr.press/v70/chou17a.html). Implicit reparameterization approaches based
 on [automatic differentiation](https://arxiv.org/abs/1805.08498v4) and [optimal mass transport](https://arxiv.org/abs/1806.01851v2)
 are used to draw samples from the policy in a differentiable manner, as required by SAC. For the experimental
 evaluation we use a subset of [MuJoCo](https://gymnasium.farama.org/environments/mujoco/) continuous control tasks.
@@ -88,10 +88,10 @@ python run_experiment.py sac_beta_omt Walker2d-v4
 Wait for the experiments to finish. To plot the results, open a terminal and run:
 
 ```bash
-python plotter.py --root-dir experiments/Ant-v4 --shaded-std --legend-pattern "^([\w-]+)" --title Ant-v4 -u --output-path Ant-v4.pdf
-python plotter.py --root-dir experiments/HalfCheetah-v4 --shaded-std --legend-pattern "^([\w-]+)" --title HalfCheetah-v4 -u --output-path HalfCheetah-v4.pdf
-python plotter.py --root-dir experiments/Hopper-v4 --shaded-std --legend-pattern "^([\w-]+)" --title Hopper-v4 -u --output-path Hopper-v4.pdf
-python plotter.py --root-dir experiments/Walker2d-v4 --shaded-std --legend-pattern "^([\w-]+)" --title Walker2d-v4 -u --output-path Walker2d-v4.pdf
+python plotter.py --root-dir experiments/Ant-v4 --smooth 1 --shaded-std --legend-pattern "^([\w-]+)" --title Ant-v4 -u --output-path Ant-v4.pdf
+python plotter.py --root-dir experiments/HalfCheetah-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title HalfCheetah-v4 --ylabel "" -u --output-path HalfCheetah-v4.pdf
+python plotter.py --root-dir experiments/Hopper-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title Hopper-v4 --ylabel "" -u --output-path Hopper-v4.pdf
+python plotter.py --root-dir experiments/Walker2d-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title Walker2d-v4 --ylabel "" -u --output-path Walker2d-v4.pdf
 ```
 
 ---------------------------------------------------------------------------------------------------------

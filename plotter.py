@@ -207,9 +207,12 @@ def plot_ax(
     def legend_fn(x):
         # return os.path.split(os.path.join(
         #     args.root_dir, x))[0].replace("/", "_") + " (10)"
-        return re.search(legend_pattern, x).group(0)
+        try:
+            return re.search(legend_pattern, x).group(0)
+        except Exception:
+            return None
 
-    legends = map(legend_fn, file_lists)
+    legends = map(legend_fn, file_lists) or [None] * len(file_lists)
     # sort filelist according to legends
     file_lists = [f for _, f in sorted(zip(legends, file_lists))]
     legends = list(map(legend_fn, file_lists))
@@ -226,11 +229,12 @@ def plot_ax(
                 x, y - 2 * y_shaded, y + 2 * y_shaded, color=color, alpha=0.2
             )
 
-    ax.legend(
-        loc=2 if legend_outside else "upper left",
-        bbox_to_anchor=(1, 1) if legend_outside else None,
-        fancybox=True,
-    )
+    if not all(l is None for l in legends):
+        ax.legend(
+            loc=2 if legend_outside else "upper left",
+            bbox_to_anchor=(1, 1) if legend_outside else None,
+            fancybox=True,
+        )
     if xlim is not None:
         ax.set_xlim(xmin=0, xmax=xlim)
     # add title
@@ -242,6 +246,11 @@ def plot_ax(
         ax.set_ylabel(ylabel)
     # Use scientific notation
     ax.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
+    ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+    ax.xaxis.set_tick_params(labelsize=8)
+    ax.yaxis.set_tick_params(labelsize=8)
+    ax.xaxis.get_offset_text().set_fontsize(8)
+    ax.yaxis.get_offset_text().set_fontsize(8)
     # add grid
     plt.grid()
 
@@ -258,9 +267,9 @@ def plot_figure(
     **kwargs,
 ):
     rc("text", usetex=usetex)
-    rc("font", family="serif", serif=["Computer Modern"], size=12)
-    rc("axes", labelsize=12)
-    rc("legend", fontsize=10, handletextpad=0.3, handlelength=2)
+    rc("font", family="serif", serif=["Computer Modern"], size=11)
+    rc("axes", labelsize=8)
+    rc("legend", fontsize=8, handletextpad=0.1, handlelength=1.25)
     rc("xtick", direction="in")
     rc("ytick", direction="in")
 
@@ -301,11 +310,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--fig-length",
         type=int,
-        default=6,
+        default=3,
         help="matplotlib figure length (default: 6)",
     )
     parser.add_argument(
-        "--fig-width", type=int, default=6, help="matplotlib figure width (default: 6)"
+        "--fig-width", type=int, default=3, help="matplotlib figure width (default: 4)"
     )
     parser.add_argument(
         "--style", default="classic", help="matplotlib figure style (default: seaborn)"
@@ -322,8 +331,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--smooth", type=int, default=0, help="smooth radius of y axis (default: 0)"
     )
-    parser.add_argument("--xlabel", default="Timestep", help="matplotlib figure xlabel")
-    parser.add_argument("--ylabel", default="Return", help="matplotlib figure ylabel")
+    parser.add_argument("--xlabel", default="Time step", help="matplotlib figure xlabel")
+    parser.add_argument("--ylabel", default="Average return", help="matplotlib figure ylabel")
     parser.add_argument(
         "--shaded-std",
         action="store_true",

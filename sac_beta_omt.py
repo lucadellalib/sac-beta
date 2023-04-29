@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Soft Actor-Critic with beta policy via optimal mass transport implicit reparameterization.
+"""Soft actor-critic with beta policy via optimal mass transport implicit reparameterization.
 
 References
 ----------
@@ -70,7 +70,7 @@ class BetaActorProb(ActorProb):
 
 
 class SACBetaOMTPolicy(SACPolicy):
-    """Soft Actor-Critic beta policy via optimal mass transport implicit reparameterization."""
+    """Soft actor-critic beta policy via optimal mass transport implicit reparameterization."""
 
     def forward(
         self,

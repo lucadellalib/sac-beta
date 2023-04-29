@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Soft Actor-Critic with beta policy via automatic differentiation implicit reparameterization.
+"""Soft actor-critic with beta policy via automatic differentiation implicit reparameterization.
 
 References
 ----------
@@ -115,7 +115,7 @@ class BetaActorProb(ActorProb):
 
 
 class SACBetaADPolicy(SACPolicy):
-    """Soft Actor-Critic beta policy via automatic differentiation implicit reparameterization."""
+    """Soft actor-critic beta policy via automatic differentiation implicit reparameterization."""
 
     def forward(
         self,

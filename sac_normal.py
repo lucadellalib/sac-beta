@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Soft Actor-Critic with normal policy.
+"""Soft actor-critic with normal policy.
 
 References
 ----------
@@ -35,7 +35,7 @@ from env import make_mujoco_env
 
 
 class SACNormalPolicy(SACPolicy):
-    """Soft Actor-Critic normal policy."""
+    """Soft actor-critic normal policy."""
 
     def forward(
         self,

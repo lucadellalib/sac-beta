@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Soft Actor-Critic with tanh normal policy.
+"""Soft actor-critic with tanh normal policy.
 
 References
 ----------
