@@ -331,8 +331,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--smooth", type=int, default=0, help="smooth radius of y axis (default: 0)"
     )
-    parser.add_argument("--xlabel", default="Time step", help="matplotlib figure xlabel")
-    parser.add_argument("--ylabel", default="Average return", help="matplotlib figure ylabel")
+    parser.add_argument(
+        "--xlabel", default="Time step", help="matplotlib figure xlabel"
+    )
+    parser.add_argument(
+        "--ylabel", default="Average return", help="matplotlib figure ylabel"
+    )
     parser.add_argument(
         "--shaded-std",
         action="store_true",

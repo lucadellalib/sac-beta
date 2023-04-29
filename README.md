@@ -59,6 +59,9 @@ and `experiments` directory, respectively.
 
 The experiments were run on a CentOS Linux 7 machine with an Intel Xeon Gold 6148 Skylake CPU with 20 cores
 @ 2.40 GHz, 32 GB RAM and an NVIDIA Tesla V100 SXM2 @ 16GB with CUDA Toolkit 11.4.2.
+
+#### Performance comparison
+
 To reproduce the experimental results, open a terminal and run:
 
 ```bash
@@ -93,6 +96,26 @@ python plotter.py --root-dir experiments/HalfCheetah-v4 --smooth 1 --shaded-std 
 python plotter.py --root-dir experiments/Hopper-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title Hopper-v4 --ylabel "" -u --output-path Hopper-v4.pdf
 python plotter.py --root-dir experiments/Walker2d-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title Walker2d-v4 --ylabel "" -u --output-path Walker2d-v4.pdf
 ```
+
+#### Ablation study
+
+To reproduce the experimental results, open a terminal and run:
+
+```bash
+conda activate sac-beta
+
+python run_experiment.py sac_beta_omt Ant-v4 --experiment-dir experiments/ablation
+python run_experiment.py sac_beta_omt_no_clip Ant-v4 --experiment-dir experiments/ablation
+python run_experiment.py sac_beta_omt_multimodal Ant-v4 --experiment-dir experiments/ablation
+python run_experiment.py sac_beta_omt_softplus Ant-v4 --experiment-dir experiments/ablation
+```
+
+Wait for the experiments to finish. To plot the results, open a terminal and run:
+
+```bash
+python plotter.py --root-dir experiments/ablation/Ant-v4 --smooth 1 --shaded-std --legend-pattern "^([\w-]+)" -u --output-path ablation.pdf
+```
+
 
 ---------------------------------------------------------------------------------------------------------
 
