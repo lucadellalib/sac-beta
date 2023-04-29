@@ -1,7 +1,7 @@
 # Soft Actor-Critic with Beta Policy via Implicit Reparameterization Gradients
 
-This project investigates the use of [soft actor-critic (SAC)](https://arxiv.org/abs/1801.01290v2) with a beta
-policy, which, compared to a normal policy, does not suffer from boundary effect bias and [has been shown to
+This project investigates the use of [soft actor-critic (SAC)](https://arxiv.org/abs/1801.01290v2) with the beta
+policy, which, compared to the normal policy, does not suffer from boundary effect bias and [has been shown to
 convergence faster](https://proceedings.mlr.press/v70/chou17a.html). Implicit reparameterization approaches based
 on [automatic differentiation](https://arxiv.org/abs/1805.08498v4) and [optimal mass transport](https://arxiv.org/abs/1806.01851v2)
 are used to draw samples from the policy in a differentiable manner, as required by SAC. For the experimental
