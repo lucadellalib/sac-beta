@@ -5,7 +5,7 @@ policy, which, compared to a normal policy, does not suffer from boundary effect
 convergence faster](https://proceedings.mlr.press/v70/chou17a.html). Implicit reparameterization approaches based
 on [automatic differentiation](https://arxiv.org/abs/1805.08498v4) and [optimal mass transport](https://arxiv.org/abs/1806.01851v2)
 are used to draw samples from the policy in a differentiable manner, as required by SAC. For the experimental
-evaluation we use a subset of [MuJoCo](https://gymnasium.farama.org/environments/mujoco/) continuous control tasks.
+evaluation we use four [MuJoCo](https://gymnasium.farama.org/environments/mujoco/) continuous control tasks.
 
 ---------------------------------------------------------------------------------------------------------
 
