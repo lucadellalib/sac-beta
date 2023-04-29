@@ -231,7 +231,7 @@ def plot_ax(
 
     if not all(l is None for l in legends):
         ax.legend(
-            loc=2 if legend_outside else "upper left",
+            loc=2 if legend_outside else "lower right",
             bbox_to_anchor=(1, 1) if legend_outside else None,
             fancybox=True,
         )
@@ -311,10 +311,10 @@ if __name__ == "__main__":
         "--fig-length",
         type=int,
         default=3,
-        help="matplotlib figure length (default: 6)",
+        help="matplotlib figure length (default: 3)",
     )
     parser.add_argument(
-        "--fig-width", type=int, default=3, help="matplotlib figure width (default: 4)"
+        "--fig-width", type=int, default=3, help="matplotlib figure width (default: 3)"
     )
     parser.add_argument(
         "--style", default="classic", help="matplotlib figure style (default: seaborn)"

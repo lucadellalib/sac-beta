@@ -67,25 +67,25 @@ To reproduce the experimental results, open a terminal and run:
 ```bash
 conda activate sac-beta
 
-python run_experiment.py sac_normal Ant-v4
-python run_experiment.py sac_tanh_normal Ant-v4
 python run_experiment.py sac_beta_ad Ant-v4
 python run_experiment.py sac_beta_omt Ant-v4
+python run_experiment.py sac_normal Ant-v4
+python run_experiment.py sac_tanh_normal Ant-v4
 
-python run_experiment.py sac_normal HalfCheetah-v4
-python run_experiment.py sac_tanh_normal HalfCheetah-v4
 python run_experiment.py sac_beta_ad HalfCheetah-v4
 python run_experiment.py sac_beta_omt HalfCheetah-v4
+python run_experiment.py sac_normal HalfCheetah-v4
+python run_experiment.py sac_tanh_normal HalfCheetah-v4
 
-python run_experiment.py sac_normal Hopper-v4
-python run_experiment.py sac_tanh_normal Hopper-v4
 python run_experiment.py sac_beta_ad Hopper-v4
 python run_experiment.py sac_beta_omt Hopper-v4
+python run_experiment.py sac_normal Hopper-v4
+python run_experiment.py sac_tanh_normal Hopper-v4
 
-python run_experiment.py sac_normal Walker2d-v4
-python run_experiment.py sac_tanh_normal Walker2d-v4
 python run_experiment.py sac_beta_ad Walker2d-v4
 python run_experiment.py sac_beta_omt Walker2d-v4
+python run_experiment.py sac_normal Walker2d-v4
+python run_experiment.py sac_tanh_normal Walker2d-v4
 ```
 
 Wait for the experiments to finish. To plot the results, open a terminal and run:
@@ -106,14 +106,14 @@ conda activate sac-beta
 
 python run_experiment.py sac_beta_omt Ant-v4 --experiment-dir experiments/ablation
 python run_experiment.py sac_beta_omt_no_clip Ant-v4 --experiment-dir experiments/ablation
-python run_experiment.py sac_beta_omt_non-concave Ant-v4 --experiment-dir experiments/ablation
+python run_experiment.py sac_beta_omt_non_concave Ant-v4 --experiment-dir experiments/ablation
 python run_experiment.py sac_beta_omt_softplus Ant-v4 --experiment-dir experiments/ablation
 ```
 
 Wait for the experiments to finish. To plot the results, open a terminal and run:
 
 ```bash
-python plotter.py --root-dir experiments/ablation/Ant-v4 --smooth 1 --shaded-std --legend-pattern "^([\w-]+)" -u --output-path ablation.pdf
+python plotter.py --root-dir experiments/ablation/Ant-v4 --smooth 1 --shaded-std --legend-pattern "^([\w-]+)" --title Ant-v4 --fig-length 5 --fig-width 3 -u --output-path ablation.pdf
 ```
 
 
