@@ -8,6 +8,7 @@ import warnings
 import gymnasium as gym
 from tianshou.env import ShmemVectorEnv, VectorEnvNormObs
 
+
 try:
     import envpool
 except ImportError:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Soft actor-critic with beta policy via automatic differentiation implicit reparameterization.
+"""Soft actor-critic with beta policy via optimal mass transport implicit reparameterization (allow for non-concave beta distribution).
 
 References
 ----------
@@ -8,10 +8,10 @@ References
        "Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor".
        In: ICML. 2018, pp. 1861-1870.
        URL: https://arxiv.org/abs/1801.01290v2
-.. [2] M. Figurnov, S. Mohamed, and A. Mnih.
-       "Implicit Reparameterization Gradients".
-       In: NeurIPS. 2018.
-       URL: https://arxiv.org/abs/1805.08498v4
+.. [2] M. Jankowiak and M. Obermeyer.
+       "Pathwise Derivatives Beyond the Reparameterization Trick".
+       In: ICML. 2018, pp. 2240-2249.
+       URL: https://arxiv.org/abs/1806.01851v2
 
 """
 
@@ -26,6 +26,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
 import torch
+from env import make_mujoco_env
 from tianshou.data import Batch, Collector, ReplayBuffer, VectorReplayBuffer
 from tianshou.policy import SACPolicy
 from tianshou.trainer import offpolicy_trainer
@@ -35,63 +36,18 @@ from tianshou.utils.net.continuous import SIGMA_MAX, SIGMA_MIN, ActorProb, Criti
 from torch.distributions import Beta, Independent
 from torch.utils.tensorboard import SummaryWriter
 
-from env import make_mujoco_env
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+EPSILON = 1e-45
 
 
-EPSILON = 1e-7
-
-
-class BetaAD(Beta):
-    """Beta distribution whose samples are drawn via automatic differentiation implicit reparameterization."""
-
-    class TFBetaSample(torch.autograd.Function):
-        """Wrapper around `sample` method of TensorFlow beta distribution."""
-
-        @staticmethod
-        def forward(ctx, concentration1, concentration0):
-            import tensorflow as tf
-            import tensorflow_probability as tfp
-
-            tf_concentration1 = tf.Variable(concentration1.detach().cpu())
-            tf_concentration0 = tf.Variable(concentration0.detach().cpu())
-            tf_beta = tfp.distributions.Beta(tf_concentration1, tf_concentration0)
-            with tf.GradientTape() as tape:
-                tf_sample = tf_beta.sample()
-                tf_concentration1_grad, tf_concentration0_grad = tape.gradient(
-                    tf_sample, [tf_concentration1, tf_concentration0]
-                )
-            device = concentration1.device
-            requires_grad = concentration1.requires_grad
-            sample = torch.tensor(
-                tf_sample.numpy(), device=device, requires_grad=requires_grad
-            )
-            concentration1_grad = torch.tensor(
-                tf_concentration1_grad.numpy(),
-                device=device,
-                requires_grad=requires_grad,
-            )
-            concentration0_grad = torch.tensor(
-                tf_concentration0_grad.numpy(),
-                device=device,
-                requires_grad=requires_grad,
-            )
-            ctx.concentration1_grad = concentration1_grad
-            ctx.concentration0_grad = concentration0_grad
-            return sample
-
-        @staticmethod
-        def backward(ctx, grad_output):
-            concentration1_grad_output = grad_output * ctx.concentration1_grad
-            concentration0_grad_output = grad_output * ctx.concentration0_grad
-            return concentration1_grad_output, concentration0_grad_output
+class BetaOMT(Beta):
+    """Beta distribution whose samples are drawn via optimal mass transport implicit reparameterization."""
 
     def rsample(self, sample_shape=()):
-        concentration1 = self.concentration1
-        concentration0 = self.concentration0
         # Clamp to avoid log probability going to NaN or infinity
-        return self.TFBetaSample.apply(concentration1, concentration0).clamp(
-            EPSILON, 1 - EPSILON
-        )
+        return super().rsample(sample_shape).clamp(EPSILON, 1 - EPSILON)
 
 
 class BetaActorProb(ActorProb):
@@ -109,13 +65,13 @@ class BetaActorProb(ActorProb):
         concentration0 = self.sigma(logits)
         concentration1 = concentration1.clamp(min=SIGMA_MIN, max=SIGMA_MAX)
         concentration0 = concentration0.clamp(min=SIGMA_MIN, max=SIGMA_MAX)
-        concentration1 = concentration1.exp() + 1
-        concentration0 = concentration0.exp() + 1
+        concentration1 = concentration1.exp()  # + 1
+        concentration0 = concentration0.exp()  # + 1
         return (concentration1, concentration0), state
 
 
-class SACBetaADPolicy(SACPolicy):
-    """Soft actor-critic beta policy via automatic differentiation implicit reparameterization."""
+class SACBetaOMTPolicy(SACPolicy):
+    """Soft actor-critic beta policy via optimal mass transport implicit reparameterization."""
 
     def forward(
         self,
@@ -128,7 +84,7 @@ class SACBetaADPolicy(SACPolicy):
         logits, hidden = self.actor(obs, state=state, info=batch.info)
         assert isinstance(logits, tuple)
         concentration1, concentration0 = logits
-        dist = Independent(BetaAD(concentration1, concentration0), 1)
+        dist = Independent(BetaOMT(concentration1, concentration0), 1)
         if self._deterministic_eval and not self.training:
             act = dist.mean
             log_prob = 0.0
@@ -161,7 +117,9 @@ def get_args():
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--training-num", type=int, default=1)
     parser.add_argument("--test-num", type=int, default=10)
-    parser.add_argument("--experiment-dir", type=str, default="experiments")
+    parser.add_argument(
+        "--experiment-dir", type=str, default=os.path.join(ROOT_DIR, "experiments")
+    )
     parser.add_argument("--render", type=float, default=0.0)
     parser.add_argument(
         "--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu"
@@ -237,7 +195,7 @@ def main(args=get_args()):
         alpha_optim = torch.optim.Adam([log_alpha], lr=args.alpha_lr)
         args.alpha = (target_entropy, log_alpha, alpha_optim)
 
-    policy = SACBetaADPolicy(
+    policy = SACBetaOMTPolicy(
         actor,
         actor_optim,
         critic1,
@@ -267,7 +225,7 @@ def main(args=get_args()):
 
     # log
     now = datetime.datetime.now().strftime("%y%m%d-%H%M%S")
-    args.algo_name = "SAC-Beta-AD"
+    args.algo_name = "SAC-Beta-OMT-non_concave"
     log_name = os.path.join(args.task, args.algo_name, str(args.seed), now)
     log_path = os.path.join(args.experiment_dir, log_name)
 

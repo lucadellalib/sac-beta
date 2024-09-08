@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Soft actor-critic with beta policy via optimal mass transport implicit reparameterization (allow for non-concave beta distribution).
+"""Soft actor-critic with beta policy via optimal mass transport implicit reparameterization (do not clip concentrations).
 
 References
 ----------
@@ -26,6 +26,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
 import torch
+from env import make_mujoco_env
 from tianshou.data import Batch, Collector, ReplayBuffer, VectorReplayBuffer
 from tianshou.policy import SACPolicy
 from tianshou.trainer import offpolicy_trainer
@@ -35,8 +36,8 @@ from tianshou.utils.net.continuous import SIGMA_MAX, SIGMA_MIN, ActorProb, Criti
 from torch.distributions import Beta, Independent
 from torch.utils.tensorboard import SummaryWriter
 
-from env import make_mujoco_env
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 EPSILON = 1e-45
 
@@ -62,10 +63,10 @@ class BetaActorProb(ActorProb):
         logits, hidden = self.preprocess(obs, state)
         concentration1 = self.mu(logits)
         concentration0 = self.sigma(logits)
-        concentration1 = concentration1.clamp(min=SIGMA_MIN, max=SIGMA_MAX)
-        concentration0 = concentration0.clamp(min=SIGMA_MIN, max=SIGMA_MAX)
-        concentration1 = concentration1.exp()  # + 1
-        concentration0 = concentration0.exp()  # + 1
+        # concentration1 = concentration1.clamp(min=SIGMA_MIN, max=SIGMA_MAX)
+        # concentration0 = concentration0.clamp(min=SIGMA_MIN, max=SIGMA_MAX)
+        concentration1 = concentration1.exp() + 1
+        concentration0 = concentration0.exp() + 1
         return (concentration1, concentration0), state
 
 
@@ -116,7 +117,9 @@ def get_args():
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--training-num", type=int, default=1)
     parser.add_argument("--test-num", type=int, default=10)
-    parser.add_argument("--experiment-dir", type=str, default="experiments")
+    parser.add_argument(
+        "--experiment-dir", type=str, default=os.path.join(ROOT_DIR, "experiments")
+    )
     parser.add_argument("--render", type=float, default=0.0)
     parser.add_argument(
         "--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu"
@@ -222,7 +225,7 @@ def main(args=get_args()):
 
     # log
     now = datetime.datetime.now().strftime("%y%m%d-%H%M%S")
-    args.algo_name = "SAC-Beta-OMT-non_concave"
+    args.algo_name = "SAC-Beta-OMT-no_clip"
     log_name = os.path.join(args.task, args.algo_name, str(args.seed), now)
     log_path = os.path.join(args.experiment_dir, log_name)
 

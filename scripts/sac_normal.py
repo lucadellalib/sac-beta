@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Soft actor-critic with beta policy via optimal mass transport implicit reparameterization (do not clip concentrations).
+"""Soft actor-critic with normal policy.
 
 References
 ----------
@@ -8,10 +8,6 @@ References
        "Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor".
        In: ICML. 2018, pp. 1861-1870.
        URL: https://arxiv.org/abs/1801.01290v2
-.. [2] M. Jankowiak and M. Obermeyer.
-       "Pathwise Derivatives Beyond the Reparameterization Trick".
-       In: ICML. 2018, pp. 2240-2249.
-       URL: https://arxiv.org/abs/1806.01851v2
 
 """
 
@@ -22,55 +18,26 @@ import argparse
 import datetime
 import os
 import pprint
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import torch
+from env import make_mujoco_env
 from tianshou.data import Batch, Collector, ReplayBuffer, VectorReplayBuffer
 from tianshou.policy import SACPolicy
 from tianshou.trainer import offpolicy_trainer
 from tianshou.utils import TensorboardLogger, WandbLogger
 from tianshou.utils.net.common import Net
-from tianshou.utils.net.continuous import SIGMA_MAX, SIGMA_MIN, ActorProb, Critic
-from torch.distributions import Beta, Independent
+from tianshou.utils.net.continuous import ActorProb, Critic
+from torch.distributions import Independent, Normal
 from torch.utils.tensorboard import SummaryWriter
 
-from env import make_mujoco_env
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 
-EPSILON = 1e-45
-
-
-class BetaOMT(Beta):
-    """Beta distribution whose samples are drawn via optimal mass transport implicit reparameterization."""
-
-    def rsample(self, sample_shape=()):
-        # Clamp to avoid log probability going to NaN or infinity
-        return super().rsample(sample_shape).clamp(EPSILON, 1 - EPSILON)
-
-
-class BetaActorProb(ActorProb):
-    """Beta actor policy."""
-
-    def forward(
-        self,
-        obs: Union[np.ndarray, torch.Tensor],
-        state: Any = None,
-        info: Dict[str, Any] = {},
-    ) -> Tuple[Tuple[torch.Tensor, torch.Tensor], Any]:
-        """Mapping: obs -> logits -> (concentration1, concentration0)."""
-        logits, hidden = self.preprocess(obs, state)
-        concentration1 = self.mu(logits)
-        concentration0 = self.sigma(logits)
-        # concentration1 = concentration1.clamp(min=SIGMA_MIN, max=SIGMA_MAX)
-        # concentration0 = concentration0.clamp(min=SIGMA_MIN, max=SIGMA_MAX)
-        concentration1 = concentration1.exp() + 1
-        concentration0 = concentration0.exp() + 1
-        return (concentration1, concentration0), state
-
-
-class SACBetaOMTPolicy(SACPolicy):
-    """Soft actor-critic beta policy via optimal mass transport implicit reparameterization."""
+class SACNormalPolicy(SACPolicy):
+    """Soft actor-critic normal policy."""
 
     def forward(
         self,
@@ -82,15 +49,12 @@ class SACBetaOMTPolicy(SACPolicy):
         obs = batch[input]
         logits, hidden = self.actor(obs, state=state, info=batch.info)
         assert isinstance(logits, tuple)
-        concentration1, concentration0 = logits
-        dist = Independent(BetaOMT(concentration1, concentration0), 1)
+        dist = Independent(Normal(*logits), 1)
         if self._deterministic_eval and not self.training:
-            act = dist.mean
-            log_prob = 0.0
+            act = logits[0]
         else:
             act = dist.rsample()
-            log_prob = dist.log_prob(act).unsqueeze(-1)
-        act = 2 * act - 1
+        log_prob = dist.log_prob(act).unsqueeze(-1)
         return Batch(logits=logits, act=act, state=hidden, dist=dist, log_prob=log_prob)
 
 
@@ -116,7 +80,9 @@ def get_args():
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--training-num", type=int, default=1)
     parser.add_argument("--test-num", type=int, default=10)
-    parser.add_argument("--experiment-dir", type=str, default="experiments")
+    parser.add_argument(
+        "--experiment-dir", type=str, default=os.path.join(ROOT_DIR, "experiments")
+    )
     parser.add_argument("--render", type=float, default=0.0)
     parser.add_argument(
         "--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu"
@@ -158,7 +124,7 @@ def main(args=get_args()):
         hidden_sizes=args.hidden_sizes,
         device=args.device,
     )
-    actor = BetaActorProb(
+    actor = ActorProb(
         net_a,
         args.action_shape,
         max_action=args.max_action,
@@ -192,7 +158,7 @@ def main(args=get_args()):
         alpha_optim = torch.optim.Adam([log_alpha], lr=args.alpha_lr)
         args.alpha = (target_entropy, log_alpha, alpha_optim)
 
-    policy = SACBetaOMTPolicy(
+    policy = SACNormalPolicy(
         actor,
         actor_optim,
         critic1,
@@ -222,7 +188,7 @@ def main(args=get_args()):
 
     # log
     now = datetime.datetime.now().strftime("%y%m%d-%H%M%S")
-    args.algo_name = "SAC-Beta-OMT-no_clip"
+    args.algo_name = "SAC-Normal"
     log_name = os.path.join(args.task, args.algo_name, str(args.seed), now)
     log_path = os.path.join(args.experiment_dir, log_name)
 

@@ -15,7 +15,8 @@ from collections import defaultdict
 import matplotlib
 import numpy as np
 import tqdm
-from matplotlib import pyplot as plt, rc
+from matplotlib import pyplot as plt
+from matplotlib import rc
 from tensorboard.backend.event_processing import event_accumulator
 
 

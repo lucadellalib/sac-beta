@@ -2,7 +2,7 @@ This project incorporates components from the projects listed below. The origina
 
 #############################################################################################################################################################
 
-1. Code in {env, plotter, sac_beta_ad, sac_beta_omt, sac_beta_omt_no_clip, sac_beta_omt_non_concave, sac_beta_omt_softplus, sac_normal, sac_tanh_normal}.py adapted from:
+1. Code in scripts/{env, plotter, sac_beta_ad, sac_beta_omt, sac_beta_omt_no_clip, sac_beta_omt_non_concave, sac_beta_omt_softplus, sac_normal, sac_tanh_normal}.py adapted from:
    https://github.com/thu-ml/tianshou/blob/v0.5.0/examples/mujoco/mujoco_env.py
    https://github.com/thu-ml/tianshou/blob/v0.5.0/examples/mujoco/mujoco_sac.py
    https://github.com/thu-ml/tianshou/blob/v0.5.0/examples/mujoco/plotter.py

@@ -45,7 +45,7 @@ conda remove --n sac-beta --all
 
 ### Running an experiment
 
-To train one of the available algorithms on a MuJoCo task, open a terminal and run:
+To train one of the available algorithms on a MuJoCo task, open a terminal in `scripts` and run:
 
 ```bash
 conda activate sac-beta
@@ -61,6 +61,9 @@ The experiments were run on a CentOS Linux 7 machine with an Intel Xeon Gold 614
 @ 2.40 GHz, 32 GB RAM and an NVIDIA Tesla V100 SXM2 @ 16GB with CUDA Toolkit 11.4.2.
 
 #### Performance comparison
+
+**NOTE**: `run_experiment.py` starts several processes in parallel under the hood, one for each experiment
+(make sure to have enough RAM and/or GPU memory, or adapt the script to your needs).
 
 To reproduce the experimental results, open a terminal and run:
 
@@ -91,36 +94,38 @@ python run_experiment.py sac_tanh_normal Walker2d-v4
 Wait for the experiments to finish. To plot the results, open a terminal and run:
 
 ```bash
-python plotter.py --root-dir experiments/Ant-v4 --smooth 1 --shaded-std --legend-pattern "^([\w-]+)" --title Ant-v4 -u --output-path Ant-v4.pdf
-python plotter.py --root-dir experiments/HalfCheetah-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title HalfCheetah-v4 --ylabel "" -u --output-path HalfCheetah-v4.pdf
-python plotter.py --root-dir experiments/Hopper-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title Hopper-v4 --ylabel "" -u --output-path Hopper-v4.pdf
-python plotter.py --root-dir experiments/Walker2d-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title Walker2d-v4 --ylabel "" -u --output-path Walker2d-v4.pdf
+python plotter.py --root-dir ../experiments/Ant-v4 --smooth 1 --shaded-std --legend-pattern "^([\w-]+)" --title Ant-v4 -u --output-path Ant-v4.pdf
+python plotter.py --root-dir ../experiments/HalfCheetah-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title HalfCheetah-v4 --ylabel "" -u --output-path HalfCheetah-v4.pdf
+python plotter.py --root-dir ../experiments/Hopper-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title Hopper-v4 --ylabel "" -u --output-path Hopper-v4.pdf
+python plotter.py --root-dir ../experiments/Walker2d-v4 --smooth 1 --shaded-std --legend-pattern "$^" --title Walker2d-v4 --ylabel "" -u --output-path Walker2d-v4.pdf
 ```
 
 #### Ablation study
+
+**NOTE**: `run_experiment.py` starts several processes in parallel under the hood, one for each experiment
+(make sure to have enough RAM and/or GPU memory, or adapt the script to your needs).
 
 To reproduce the experimental results, open a terminal and run:
 
 ```bash
 conda activate sac-beta
 
-python run_experiment.py sac_beta_omt Ant-v4 --experiment-dir experiments/ablation
-python run_experiment.py sac_beta_omt_no_clip Ant-v4 --experiment-dir experiments/ablation
-python run_experiment.py sac_beta_omt_non_concave Ant-v4 --experiment-dir experiments/ablation
-python run_experiment.py sac_beta_omt_softplus Ant-v4 --experiment-dir experiments/ablation
+python run_experiment.py sac_beta_omt Ant-v4 --experiment-dir ../experiments/ablation
+python run_experiment.py sac_beta_omt_no_clip Ant-v4 --experiment-dir ../experiments/ablation
+python run_experiment.py sac_beta_omt_non_concave Ant-v4 --experiment-dir ../experiments/ablation
+python run_experiment.py sac_beta_omt_softplus Ant-v4 --experiment-dir ../experiments/ablation
 ```
 
 Wait for the experiments to finish. To plot the results, open a terminal and run:
 
 ```bash
-python plotter.py --root-dir experiments/ablation/Ant-v4 --smooth 1 --shaded-std --legend-pattern "^([\w-]+)" --title Ant-v4 --fig-length 5 --fig-width 3 -u --output-path ablation.pdf
+python plotter.py --root-dir ../experiments/ablation/Ant-v4 --smooth 1 --shaded-std --legend-pattern "^([\w-]+)" --title Ant-v4 --fig-length 5 --fig-width 3 -u --output-path ablation.pdf
 ```
-
 
 ---------------------------------------------------------------------------------------------------------
 
 ## 📧 Contact
 
-Luca Della Libera <[luca.dellalib@gmail.com](mailto:luca.dellalib@gmail.com)>
+[luca.dellalib@gmail.com](mailto:luca.dellalib@gmail.com)
 
 ---------------------------------------------------------------------------------------------------------
