@@ -2,7 +2,7 @@
 
 This project investigates the use of [soft actor-critic (SAC)](https://arxiv.org/abs/1801.01290v2) with the beta
 policy, which, compared to the normal policy, does not suffer from boundary effect bias and [has been shown to
-convergence faster](https://proceedings.mlr.press/v70/chou17a.html). Implicit reparameterization approaches based
+converge faster](https://proceedings.mlr.press/v70/chou17a.html). Implicit reparameterization approaches based
 on [automatic differentiation](https://arxiv.org/abs/1805.08498v4) and [optimal mass transport](https://arxiv.org/abs/1806.01851v2)
 are used to draw samples from the policy in a differentiable manner, as required by SAC. For the experimental
 evaluation we use four [MuJoCo](https://gymnasium.farama.org/environments/mujoco/) continuous control tasks.
